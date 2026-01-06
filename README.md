@@ -21,6 +21,28 @@ This README explains the project structure, how to run the app locally, environm
 - Frontend: React, Vite, Axios, React Router
 - Backend: Node.js, Express, Mongoose (MongoDB), bcryptjs, jsonwebtoken
 
+🔗 Live Links
+
+Frontend: [https://ideamagix-assessement.netlify.app/](https://lecturesystem.netlify.app/)
+
+Backend API: [https://ideatest-in0m.onrender.com](https://ideamagixassessment.onrender.com)
+
+GitHub: (add your repo link here)
+
+🧪 Test Credentials
+
+Admin
+
+Email: admin2@lecture.com
+
+Password: admin123
+
+Instructor
+
+Email: instructor.demo@ideamagix.com
+
+Password: Instructor123
+
 ## Prerequisites
 
 - Node.js (v16+ recommended)
@@ -111,4 +133,5 @@ Contributions are welcome. Create issues or pull requests against the `main` bra
 ## License
 
 Add your preferred license here (e.g. MIT).
+
 
