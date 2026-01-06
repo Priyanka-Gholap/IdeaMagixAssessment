@@ -23,11 +23,11 @@ This README explains the project structure, how to run the app locally, environm
 
 🔗 Live Links
 
-Frontend: [https://ideamagix-assessement.netlify.app/](https://lecturesystem.netlify.app/)
+Frontend: https://ideamagix-assessement.netlify.app/](https://lecturesystem.netlify.app/
 
-Backend API: [https://ideatest-in0m.onrender.com](https://ideamagixassessment.onrender.com)
+Backend API: https://ideatest-in0m.onrender.com](https://ideamagixassessment.onrender.com
 
-GitHub: (add your repo link here)
+GitHub: https://github.com/Priyanka-Gholap/IdeaMagixAssessment.git
 
 🧪 Test Credentials
 
@@ -133,5 +133,6 @@ Contributions are welcome. Create issues or pull requests against the `main` bra
 ## License
 
 Add your preferred license here (e.g. MIT).
+
 
 
