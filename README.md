@@ -23,7 +23,7 @@ This README explains the project structure, how to run the app locally, environm
 
 🔗 Live Links
 
-Frontend: https://ideamagix-assessement.netlify.app/](https://lecturesystem.netlify.app/
+Frontend:  https://lecturesystem.netlify.app/
 
 Backend API: https://ideatest-in0m.onrender.com](https://ideamagixassessment.onrender.com
 
