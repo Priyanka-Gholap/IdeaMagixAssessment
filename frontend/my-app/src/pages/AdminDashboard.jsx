@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import DashboardLayout from '../components/DashboardLayout';
-import api from '../utils/api';
-import { toast, ToastContainer } from 'react-toastify';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import api from "../utils/api";
+import { toast, ToastContainer } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -11,6 +11,7 @@ const AdminDashboard = () => {
     upcomingLectures: 0,
     totalLectures: 0,
   });
+
   const [recentCourses, setRecentCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,13 +22,14 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const [coursesRes, instructorsRes, lecturesRes] = await Promise.all([
-        api.get('/courses'),
-        api.get('/instructors'),
-        api.get('/lectures'),
+        api.get("/courses"),
+        api.get("/instructors"),
+        api.get("/lectures"),
       ]);
 
       const courses = coursesRes.data;
       const lectures = lecturesRes.data;
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -36,13 +38,13 @@ const AdminDashboard = () => {
         totalInstructors: instructorsRes.data.length,
         totalLectures: lectures.length,
         upcomingLectures: lectures.filter(
-          (lecture) => new Date(lecture.date) >= today
+          (l) => new Date(l.date) >= today
         ).length,
       });
 
       setRecentCourses(courses.slice(0, 3));
     } catch (error) {
-      toast.error('Failed to load dashboard data');
+      toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
@@ -52,75 +54,77 @@ const AdminDashboard = () => {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-lg font-semibold" style={{ color: '#0369A1' }}>
-            Loading dashboard...
-          </p>
+          <p className="text-sm text-slate-500">Loading dashboard...</p>
         </div>
       </DashboardLayout>
     );
   }
 
   const statsCards = [
-    { label: 'Total Courses', value: stats.totalCourses, gradient: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)', path: '/admin/courses' },
-    { label: 'Total Instructors', value: stats.totalInstructors, gradient: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)', path: '/admin/instructors' },
-    { label: 'Upcoming Lectures', value: stats.upcomingLectures, gradient: 'linear-gradient(135deg, #F59E0B 0%, #FCD34D 100%)', path: '/admin/all-lectures' },
-    { label: 'Total Lectures', value: stats.totalLectures, gradient: 'linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%)', path: '/admin/all-lectures' },
+    { label: "Total Courses", value: stats.totalCourses, path: "/admin/courses" },
+    { label: "Total Instructors", value: stats.totalInstructors, path: "/admin/instructors" },
+    { label: "Upcoming Lectures", value: stats.upcomingLectures, path: "/admin/all-lectures" },
+    { label: "Total Lectures", value: stats.totalLectures, path: "/admin/all-lectures" },
   ];
 
   return (
     <DashboardLayout>
-      <ToastContainer />
-      
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {statsCards.map((stat, index) => (
-          <Link 
-            key={index}
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {statsCards.map((stat) => (
+          <Link
+            key={stat.label}
             to={stat.path}
-            className="rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
-            style={{ background: stat.gradient }}
+            className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition"
           >
-            <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide mb-2">
-              {stat.label}
-            </h3>
-            <p className="text-4xl font-bold text-white">{stat.value}</p>
+            <p className="text-sm text-slate-500 mb-1">{stat.label}</p>
+            <p className="text-3xl font-semibold text-slate-800">
+              {stat.value}
+            </p>
           </Link>
         ))}
       </div>
 
       {/* Recent Courses */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border" style={{ borderColor: '#BFDBFE' }}>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold" style={{ color: '#0369A1' }}>
+      <div className="bg-white border rounded-xl p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-lg font-semibold text-slate-800">
             Recent Courses
           </h2>
+          <Link
+            to="/admin/courses"
+            className="text-sm text-indigo-600 hover:underline"
+          >
+            View all
+          </Link>
         </div>
 
         {recentCourses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {recentCourses.map((course) => (
               <Link
                 key={course._id}
                 to={`/admin/courses/${course._id}`}
-                className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all border"
-                style={{ borderColor: '#BFDBFE' }}
+                className="border rounded-lg overflow-hidden hover:shadow-md transition"
               >
                 {course.image && (
                   <img
                     src={course.image}
                     alt={course.name}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-40 object-cover"
                   />
                 )}
-                <div className="p-5">
-                  <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3"
-                    style={{ backgroundColor: '#DBEAFE', color: '#0369A1' }}>
+
+                <div className="p-4">
+                  <span className="inline-block mb-2 px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-600">
                     {course.level}
-                  </div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: '#0369A1' }}>
+                  </span>
+                  <h3 className="font-medium text-slate-800 mb-1">
                     {course.name}
                   </h3>
-                  <p className="text-sm line-clamp-2" style={{ color: '#64748B' }}>
+                  <p className="text-sm text-slate-500 line-clamp-2">
                     {course.description}
                   </p>
                 </div>
@@ -128,14 +132,13 @@ const AdminDashboard = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-lg font-semibold mb-2" style={{ color: '#64748B' }}>
-              No courses found
+          <div className="text-center py-10">
+            <p className="text-sm text-slate-500 mb-4">
+              No courses available
             </p>
             <Link
               to="/admin/courses/add"
-              className="inline-block px-6 py-3 rounded-lg font-bold text-white transition-all hover:shadow-lg"
-              style={{ background: 'linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)' }}
+              className="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700"
             >
               Add First Course
             </Link>

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import DashboardLayout from '../components/DashboardLayout';
-import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
-import { toast, ToastContainer } from 'react-toastify';
+import { useState, useEffect } from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
+import { toast, ToastContainer } from "react-toastify";
 
 const InstructorDashboard = () => {
   const { user } = useAuth();
@@ -17,35 +17,32 @@ const InstructorDashboard = () => {
     try {
       const { data } = await api.get(`/lectures/instructor/${user._id}`);
       setLectures(data);
-    } catch (error) {
-      toast.error('Failed to fetch lectures');
+    } catch {
+      toast.error("Failed to fetch lectures");
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
-  };
 
-  const isUpcoming = (date) => {
-    return new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0));
-  };
+  const isUpcoming = (date) =>
+    new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0));
 
-  const upcomingLectures = lectures.filter((lecture) => isUpcoming(lecture.date));
+  const upcomingLectures = lectures.filter((l) =>
+    isUpcoming(l.date)
+  );
 
-  // Simple loading text
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-lg font-semibold" style={{ color: '#0369A1' }}>
-            Loading lectures...
-          </p>
+        <div className="flex items-center justify-center h-64 text-sm text-slate-500">
+          Loading lectures...
         </div>
       </DashboardLayout>
     );
@@ -53,154 +50,84 @@ const InstructorDashboard = () => {
 
   return (
     <DashboardLayout>
-      <ToastContainer position="top-right" autoClose={3000} theme="light" />
+      <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Welcome Header - Simple Centered Text */}
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold" style={{ color: '#0369A1' }}>
-          Welcome back, {user?.name}!
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold text-slate-800">
+          Welcome back, {user?.name}
         </h1>
+        <p className="text-sm text-slate-500">
+          Here are your upcoming lectures
+        </p>
       </div>
 
-      {/* Upcoming Lectures Section */}
-      <div
-        className="rounded-2xl border shadow-lg overflow-hidden"
-        style={{ backgroundColor: '#FFFFFF', borderColor: '#BFDBFE' }}
-      >
-        <div
-          className="p-6 border-b text-center"
-          style={{
-            background: 'linear-gradient(to right, #EFF6FF, #F0F9FF)',
-            borderColor: '#BFDBFE',
-          }}
-        >
-          <h2 className="text-2xl font-bold" style={{ color: '#0369A1' }}>
+      {/* Upcoming Lectures */}
+      <div className="bg-white border rounded-xl shadow-sm">
+        <div className="px-5 py-4 border-b">
+          <h2 className="text-lg font-semibold text-slate-800">
             Upcoming Lectures
           </h2>
         </div>
 
-        <div className="p-6">
+        <div className="p-5">
           {upcomingLectures.length > 0 ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {upcomingLectures.map((lecture) => (
                 <div
                   key={lecture._id}
-                  className="rounded-xl p-5 border-l-4 hover:shadow-xl transition-all duration-300"
-                  style={{
-                    backgroundColor: '#F0F9FF',
-                    borderLeftColor: '#0EA5E9',
-                    border: '1px solid #BFDBFE',
-                  }}
+                  className="border rounded-lg p-4 hover:shadow-sm transition"
                 >
-                  {/* Course Header */}
-                  <div className="flex items-center gap-4 mb-4">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    {/* Course Image */}
                     {lecture.course?.image && (
                       <img
                         src={lecture.course.image}
                         alt={lecture.course.name}
-                        className="w-20 h-20 object-cover rounded-xl shadow-md ring-2 ring-white"
+                        className="w-full md:w-28 h-20 object-cover rounded-md"
                       />
                     )}
+
+                    {/* Info */}
                     <div className="flex-1">
-                      <h3
-                        className="text-xl font-bold mb-1"
-                        style={{ color: '#0369A1' }}
-                      >
+                      <h3 className="font-medium text-slate-800">
                         {lecture.course?.name}
                       </h3>
-                      <span
-                        className="inline-block px-3 py-1 rounded-lg text-xs font-bold"
-                        style={{
-                          backgroundColor: '#DBEAFE',
-                          color: '#0369A1',
-                        }}
-                      >
-                        {lecture.batchName}
-                      </span>
+                      <p className="text-sm text-slate-500">
+                        Batch: {lecture.batchName}
+                      </p>
+
+                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-slate-600">
+                        <div>
+                          <span className="font-medium">Date:</span>{" "}
+                          {formatDate(lecture.date)}
+                        </div>
+                        <div>
+                          <span className="font-medium">Time:</span>{" "}
+                          {lecture.startTime} – {lecture.endTime}
+                        </div>
+                        {lecture.topic && (
+                          <div>
+                            <span className="font-medium">Topic:</span>{" "}
+                            {lecture.topic}
+                          </div>
+                        )}
+                      </div>
+
+                      {lecture.notes && (
+                        <p className="mt-2 text-sm text-slate-500">
+                          <span className="font-medium">Notes:</span>{" "}
+                          {lecture.notes}
+                        </p>
+                      )}
                     </div>
                   </div>
-
-                  {/* Date & Time Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
-                      <p
-                        className="text-xs font-bold uppercase tracking-wide mb-1"
-                        style={{ color: '#64748B' }}
-                      >
-                        Date
-                      </p>
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: '#0369A1' }}
-                      >
-                        {formatDate(lecture.date)}
-                      </span>
-                    </div>
-                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
-                      <p
-                        className="text-xs font-bold uppercase tracking-wide mb-1"
-                        style={{ color: '#64748B' }}
-                      >
-                        Time
-                      </p>
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: '#0369A1' }}
-                      >
-                        {lecture.startTime} - {lecture.endTime}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Topic */}
-                  {lecture.topic && (
-                    <div className="mb-3 p-3 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
-                      <p
-                        className="text-xs font-bold uppercase tracking-wide mb-1"
-                        style={{ color: '#64748B' }}
-                      >
-                        Topic
-                      </p>
-                      <p
-                        className="text-sm font-semibold"
-                        style={{ color: '#0F172A' }}
-                      >
-                        {lecture.topic}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Notes */}
-                  {lecture.notes && (
-                    <div
-                      className="p-4 rounded-lg border-l-2"
-                      style={{
-                        backgroundColor: '#DBEAFE',
-                        borderLeftColor: '#0EA5E9',
-                      }}
-                    >
-                      <p
-                        className="text-xs font-bold uppercase tracking-wide mb-1"
-                        style={{ color: '#0369A1' }}
-                      >
-                        Notes
-                      </p>
-                      <p className="text-sm" style={{ color: '#475569' }}>
-                        {lecture.notes}
-                      </p>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <p className="text-lg font-bold mb-2" style={{ color: '#0369A1' }}>
-                No upcoming lectures scheduled
-              </p>
-              <p className="text-sm" style={{ color: '#94A3B8' }}>
-                Check back soon for new assignments
-              </p>
+            <div className="text-center py-12 text-slate-500">
+              No upcoming lectures scheduled
             </div>
           )}
         </div>

@@ -1,77 +1,58 @@
-import { useState, useEffect } from 'react';
-import DashboardLayout from '../components/DashboardLayout';
-import api from '../utils/api';
-import { toast, ToastContainer } from 'react-toastify';
+import { useState, useEffect } from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
+import { toast, ToastContainer } from "react-toastify";
 
-const InstructorList = () => {
-  const [instructors, setInstructors] = useState([]);
+const InstructorLectures = () => {
+  const { user } = useAuth();
   const [lectures, setLectures] = useState([]);
-  const [loading, setLoading] = useState(true); // loading state
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("upcoming");
 
   useEffect(() => {
-    fetchData();
+    fetchLectures();
   }, []);
 
-  const fetchData = async () => {
+  const fetchLectures = async () => {
     try {
-      const [instructorsRes, lecturesRes] = await Promise.all([
-        api.get('/instructors'),
-        api.get('/lectures'),
-      ]);
-      setInstructors(instructorsRes.data);
-      setLectures(lecturesRes.data);
-    } catch (error) {
-      toast.error('Failed to fetch data');
+      const { data } = await api.get(`/lectures/instructor/${user._id}`);
+      setLectures(data);
+    } catch {
+      toast.error("Failed to fetch lectures");
     } finally {
       setLoading(false);
     }
   };
 
-  const getInstructorNextLecture = (instructorId) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const isUpcoming = (date) =>
+    new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0));
 
-    const upcomingLectures = lectures
-      .filter(
-        (lecture) =>
-          lecture.instructor?._id === instructorId &&
-          new Date(lecture.date) >= today
-      )
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    return upcomingLectures[0] || null;
-  };
-
-  const getInstructorLecturesCount = (instructorId) => {
-    return lectures.filter(
-      (lecture) => lecture.instructor?._id === instructorId
-    ).length;
-  };
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
-  };
 
-  const formatTime = (time) => {
-    return new Date(`2000-01-01 ${time}`).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+  const formatTime = (time) =>
+    new Date(`2000-01-01 ${time}`).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
     });
-  };
 
-  // Simple loading text while fetching
+  const filteredLectures = lectures.filter((lecture) => {
+    if (filter === "upcoming") return isUpcoming(lecture.date);
+    if (filter === "completed") return !isUpcoming(lecture.date);
+    return true;
+  });
+
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-lg font-semibold" style={{ color: '#0369A1' }}>
-            Loading instructors...
-          </p>
+        <div className="flex items-center justify-center h-64 text-sm text-slate-500">
+          Loading lectures...
         </div>
       </DashboardLayout>
     );
@@ -79,178 +60,112 @@ const InstructorList = () => {
 
   return (
     <DashboardLayout>
-      <ToastContainer position="top-right" autoClose={3000} theme="light" />
+      <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Header Section */}
-      <div className="mb-8">
-        <h2
-          className="text-3xl font-bold text-center"
-          style={{ color: '#0369A1' }}
-        >
-          Instructors
-        </h2>
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold text-slate-800">
+          My Lectures
+        </h1>
+        <p className="text-sm text-slate-500">
+          View and manage your assigned sessions
+        </p>
       </div>
 
-      {/* Instructors Grid / Empty State */}
-      {instructors.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {instructors.map((instructor) => {
-            const nextLecture = getInstructorNextLecture(instructor._id);
-            const totalLectures = getInstructorLecturesCount(instructor._id);
+      {/* Filters */}
+      <div className="mb-6 flex gap-2">
+        {["upcoming", "completed", "all"].map((type) => (
+          <button
+            key={type}
+            onClick={() => setFilter(type)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
+              filter === type
+                ? "bg-slate-900 text-white border-slate-900"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+            }`}
+          >
+            {type.charAt(0).toUpperCase() + type.slice(1)}
+          </button>
+        ))}
+      </div>
 
-            // Optional profile/avatar URL on instructor object
-            const profileImage = instructor.profilePicture || instructor.avatar;
+      {/* Lecture List */}
+      {filteredLectures.length > 0 ? (
+        <div className="space-y-4">
+          {filteredLectures.map((lecture) => (
+            <div
+              key={lecture._id}
+              className="bg-white border rounded-lg p-4 hover:shadow-sm transition"
+            >
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Course Image */}
+                {lecture.course?.image && (
+                  <img
+                    src={lecture.course.image}
+                    alt={lecture.course.name}
+                    className="w-full md:w-24 h-20 object-cover rounded-md"
+                  />
+                )}
 
-            return (
-              <div
-                key={instructor._id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border"
-                style={{ borderColor: '#BFDBFE' }}
-              >
-                {/* Instructor Header */}
-                <div
-                  className="p-4 border-b"
-                  style={{
-                    background:
-                      'linear-gradient(to right, #EFF6FF, #F0F9FF)',
-                    borderColor: '#BFDBFE',
-                  }}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    {/* Profile/Avatar + Name, Expertise & Email */}
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      {/* Small profile circle */}
-                      <div className="flex-shrink-0">
-                        {profileImage ? (
-                          <img
-                            src={profileImage}
-                            alt={instructor.name}
-                            className="w-10 h-10 rounded-full object-cover border"
-                            style={{ borderColor: '#BFDBFE' }}
-                          />
-                        ) : (
-                          <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-                            style={{
-                              backgroundColor: '#DBEAFE',
-                              color: '#0369A1',
-                            }}
-                          >
-                            {instructor.name
-                              ?.trim()
-                              .charAt(0)
-                              .toUpperCase() || '?'}
-                          </div>
-                        )}
-                      </div>
+                {/* Content */}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-medium text-slate-800">
+                      {lecture.course?.name}
+                    </h3>
 
-                      <div className="flex-1 min-w-0">
-                        <h3
-                          className="text-lg font-bold mb-1"
-                          style={{ color: '#0369A1' }}
-                        >
-                          {instructor.name}
-                        </h3>
-                        {instructor.expertise && (
-                          <p
-                            className="text-sm mb-1"
-                            style={{ color: '#64748B' }}
-                          >
-                            {instructor.expertise}
-                          </p>
-                        )}
-                        <p
-                          className="text-xs"
-                          style={{ color: '#94A3B8' }}
-                        >
-                          {instructor.email}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Lecture Count Badge */}
-                    <div
-                      className="text-center px-3 py-1 rounded-lg flex-shrink-0"
-                      style={{ backgroundColor: '#DBEAFE' }}
+                    <span
+                      className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                        isUpcoming(lecture.date)
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
                     >
-                      <p
-                        className="text-xl font-bold"
-                        style={{ color: '#0EA5E9' }}
-                      >
-                        {totalLectures}
-                      </p>
-                      <p
-                        className="text-[10px] font-semibold"
-                        style={{ color: '#0369A1' }}
-                      >
-                        {totalLectures === 1 ? 'Lecture' : 'Lectures'}
-                      </p>
-                    </div>
+                      {isUpcoming(lecture.date) ? "Upcoming" : "Completed"}
+                    </span>
                   </div>
-                </div>
 
-                {/* Next Lecture Status */}
-                <div className="p-4">
-                  <h4
-                    className="text-xs font-bold uppercase tracking-wide mb-3"
-                    style={{ color: '#0369A1' }}
-                  >
-                    Next Scheduled Lecture
-                  </h4>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Batch: {lecture.batchName} • {lecture.course?.level}
+                  </p>
 
-                  {nextLecture ? (
-                    <div className="text-center py-1">
-                      <span
-                        className="inline-flex items-center px-4 py-1.5 rounded-lg text-sm font-bold"
-                        style={{
-                          backgroundColor: '#D1FAE5',
-                          color: '#065F46',
-                        }}
-                      >
-                        ✓ Assigned
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-center py-1">
-                      <span
-                        className="inline-block px-4 py-1.5 rounded-lg text-sm font-bold"
-                        style={{
-                          backgroundColor: '#FEE2E2',
-                          color: '#991B1B',
-                        }}
-                      >
-                        Not Assigned
-                      </span>
-                    </div>
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
+                    <p>
+                      <span className="font-medium">Date:</span>{" "}
+                      {formatDate(lecture.date)}
+                    </p>
+                    <p>
+                      <span className="font-medium">Time:</span>{" "}
+                      {formatTime(lecture.startTime)} –{" "}
+                      {formatTime(lecture.endTime)}
+                    </p>
+                  </div>
+
+                  {lecture.topic && (
+                    <p className="mt-2 text-sm text-slate-700">
+                      <span className="font-medium">Topic:</span>{" "}
+                      {lecture.topic}
+                    </p>
+                  )}
+
+                  {lecture.notes && (
+                    <p className="mt-1 text-sm text-slate-500">
+                      <span className="font-medium">Notes:</span>{" "}
+                      {lecture.notes}
+                    </p>
                   )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       ) : (
-        <div
-          className="bg-white rounded-2xl shadow-lg text-center py-20 px-6 border"
-          style={{ borderColor: '#BFDBFE' }}
-        >
-          <div className="max-w-md mx-auto">
-            <h3
-              className="text-2xl font-bold mb-2"
-              style={{ color: '#0369A1' }}
-            >
-              No Instructors Found
-            </h3>
-            <p
-              className="text-base"
-              style={{ color: '#64748B' }}
-            >
-              Instructors will appear here once they sign up.
-            </p>
-          </div>
+        <div className="bg-white border rounded-lg text-center py-16 text-slate-500">
+          No lectures found for this filter
         </div>
       )}
     </DashboardLayout>
   );
 };
 
-export default InstructorList;
+export default InstructorLectures;
