@@ -39,11 +39,7 @@ const AuthPage = () => {
 
     setLoading(true);
     try {
-      const user = await login(
-        loginData.email,
-        loginData.password,
-        role
-      );
+      const user = await login(loginData.email, loginData.password, role);
       toast.success(`Welcome ${user.name}`);
       setTimeout(() => {
         navigate(user.role === "admin" ? "/admin" : "/instructor");
@@ -167,6 +163,47 @@ const AuthPage = () => {
                   {loading ? "Please wait..." : "Sign In"}
                 </button>
               </form>
+
+              {/* DEMO CREDENTIALS */}
+              <div className="mt-6 p-4 rounded-lg bg-indigo-50 border border-indigo-200">
+                <p className="text-xs font-bold text-indigo-700 mb-3 uppercase">
+                  Demo Login Credentials
+                </p>
+
+                {!showAdminLogin ? (
+                  <>
+                    <p className="text-sm font-semibold text-slate-800">
+                      👨‍🏫 Instructor
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      Email:{" "}
+                      <span className="font-mono">
+                        instructor.demo@ideamagix.com
+                      </span>
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      Password:{" "}
+                      <span className="font-mono">Instructor@123</span>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-semibold text-slate-800">
+                      🛠️ Admin
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      Email:{" "}
+                      <span className="font-mono">
+                        admin2@lecture.com
+                      </span>
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      Password:{" "}
+                      <span className="font-mono">Admin123</span>
+                    </p>
+                  </>
+                )}
+              </div>
 
               <div className="mt-6 text-center">
                 <button
